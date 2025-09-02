@@ -9,15 +9,69 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+    bool _isPasswordVisible = false;
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    final Size size = MediaQuery.of(context).size;
+    return Scaffold(
       body: SafeArea(child:Column(
+        //Axis o eje vertical
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(child: RiveAnimation.asset('animated_login_character.riv')),
+          SizedBox(
+            //Ancho de la pantalla calculado por MQ
+            width: size.width,
+            height: 200,
+            child: RiveAnimation.asset('animated_login_character.riv'),
+          ),
+          SizedBox(height: 10),
+          TextField(
+            keyboardType:TextInputType.emailAddress,
+            decoration: InputDecoration(
+              hintText: "Email",
+              prefixIcon: const Icon(Icons.mail),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+           SizedBox(height: 10),
+          TextField(
+            //para que se oculten las contraseñas
+            obscureText:! _isPasswordVisible,
+            decoration: InputDecoration(
+              hintText: "Password",
+              prefixIcon: const Icon(Icons.lock),
+              suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: size.width,
+            child: const Text("Forgot your password?",
+            textAlign: TextAlign.right,
+            style: TextStyle(decoration: TextDecoration.underline),
+            ),
+          )
         ],
       )),
     );
   }
 }
+
+ 
 
