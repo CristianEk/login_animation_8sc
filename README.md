@@ -20,4 +20,6 @@ Success and fail animations are triggered when pressing the login button.
 
 Toggle to show/hide the password.
 
+Rive animation used in this project: https://rive.app/marketplace/3645-7621-remix-of-login-machine/
+
 ![login_animation_8sc](assets/gif.gif)
