@@ -1,36 +1,136 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
 
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: const LoginScreen(title: 'Login'), // 🔹 PASAMOS el title
+    );
+  }
+}
+
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key, required String title});
+  const LoginScreen({super.key, required this.title});
+  final String title;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // lógica de animaciones
   StateMachineController? controller;
-  // state machine inputs
-  SMIBool? isChecking; // el oso chismoso
-  SMIBool? isHandsUp;  // se tapa los ojos
-  SMITrigger? triggerSuccess; // se emociona
-  SMITrigger? triggerFail;    // se pone triste
-  SMINumber? numLook; // ya existe en la animación
 
-  
+  SMIBool? isCheking;
+  SMIBool? isHandsUp;
+  SMITrigger? triggerSuccess;
+  SMITrigger? triggerFail;
+  SMINumber? numlook;
+
+  final FocusNode _emailFocus = FocusNode();
+  final FocusNode _passwordFocus = FocusNode();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   bool _isPasswordVisible = false;
+  Timer? _emailIdleTimer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _emailFocus.addListener(() {
+      if (_emailFocus.hasFocus) {
+        if (isCheking != null) isCheking!.change(true);
+        if (isHandsUp != null) isHandsUp!.change(false);
+
+        _emailIdleTimer?.cancel();
+        _emailIdleTimer = Timer(const Duration(seconds: 2), () {
+          if (numlook != null) numlook!.value = 0;
+          if (isCheking != null) isCheking!.change(false);
+        });
+      } else {
+        _emailIdleTimer?.cancel();
+        if (numlook != null) numlook!.value = 0;
+        if (isCheking != null) isCheking!.change(false);
+      }
+    });
+
+    _passwordFocus.addListener(() {
+      if (_passwordFocus.hasFocus) {
+        if (isHandsUp != null) isHandsUp!.change(true);
+        if (isCheking != null) isCheking!.change(false);
+      } else {
+        if (isHandsUp != null) isHandsUp!.change(false);
+      }
+    });
+  }
+
+  void _onEmailChanged(String value) {
+    _emailIdleTimer?.cancel();
+    if (isCheking != null) isCheking!.change(true);
+    if (isHandsUp != null) isHandsUp!.change(false);
+
+    if (numlook != null) numlook!.value = value.length.toDouble();
+
+    _emailIdleTimer = Timer(const Duration(seconds: 3), () {
+      if (numlook != null) numlook!.value = 0;
+      if (isCheking != null) isCheking!.change(false);
+    });
+  }
+
+  void _validateLogin() {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    setState(() {
+      if (email == 'cristian@gmail.com' && password == '123456') {
+        triggerSuccess?.fire();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login exitoso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        triggerFail?.fire();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Email o contraseña incorrecta'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _emailIdleTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Column(
-            // eje vertical
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(
@@ -38,42 +138,30 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 200,
                 child: RiveAnimation.asset(
                   'animated_login_character.riv',
-                  stateMachines: ["Login Machine"], // 👈 corregido
+                  stateMachines: ['Login Machine'],
                   onInit: (artboard) {
                     controller = StateMachineController.fromArtboard(
                       artboard,
-                      "Login Machine", // 👈 corregido
+                      "Login Machine",
                     );
                     if (controller == null) return;
-          
                     artboard.addController(controller!);
-          
-                    // enlaza la animación con la app
-                    isChecking = controller!.findSMI<SMIBool>('isChecking'); // 👈 corregido
-                    isHandsUp = controller!.findSMI<SMIBool>('isHandsUp');   // 👈 corregido
-                    triggerSuccess = controller!.findSMI<SMITrigger>('trigSuccess'); // 👈 corregido
-                    triggerFail = controller!.findSMI<SMITrigger>('trigFail');       // 👈 corregido
-                    numLook = controller!.findSMI<SMINumber>('numLook'); // aquí lo conectas
+
+                    isCheking = controller!.findSMI<SMIBool>("isChecking");
+                    isHandsUp = controller!.findSMI<SMIBool>("isHandsUp");
+                    triggerSuccess = controller!.findSMI<SMITrigger>("trigSuccess");
+                    triggerFail = controller!.findSMI<SMITrigger>("trigFail");
+                    numlook = controller!.findSMI<SMINumber>("numLook");
                   },
                 ),
               ),
               const SizedBox(height: 10),
+
               TextField(
-                onChanged: (value) {
-                  // no se tapa las manos cuando escribes email
-                  if (isHandsUp != null) {
-                    isHandsUp!.change(false);
-                  }
-                  if (isChecking != null) {
-                    isChecking!.change(true);
-                  }
-                    if (numLook != null) {
-                    int lookValue = value.length; 
-                    if (lookValue > 1000) lookValue = 1000; // no exceder el máximo
-                    numLook!.change(lookValue.toDouble());
-                  }
-                },  
+                controller: _emailController,
+                focusNode: _emailFocus,
                 keyboardType: TextInputType.emailAddress,
+                onChanged: _onEmailChanged,
                 decoration: InputDecoration(
                   hintText: "Email",
                   prefixIcon: const Icon(Icons.mail),
@@ -83,34 +171,28 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 10),
+
               TextField(
-                onChanged: (value) {
-                  // no mueve sus ojos
-                  if (isChecking != null) {
-                    isChecking!.change(false);
-                  }
-                  if (isHandsUp != null) {
-                    isHandsUp!.change(true);
-                  }
-                },
+                controller: _passwordController,
+                focusNode: _passwordFocus,
                 obscureText: !_isPasswordVisible,
                 decoration: InputDecoration(
                   hintText: "Password",
                   prefixIcon: const Icon(Icons.lock),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                     ),
                     onPressed: () {
                       setState(() {
                         _isPasswordVisible = !_isPasswordVisible;
                       });
                     },
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
@@ -123,8 +205,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(decoration: TextDecoration.underline),
                 ),
               ),
-              // botón de login
               const SizedBox(height: 10),
+
               MaterialButton(
                 minWidth: size.width,
                 height: 50,
@@ -132,13 +214,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                onPressed: () {},
                 child: const Text(
                   "Login",
                   style: TextStyle(color: Colors.white),
                 ),
+                onPressed: _validateLogin,
               ),
               const SizedBox(height: 10),
+
               SizedBox(
                 width: size.width,
                 child: Row(
@@ -148,17 +231,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextButton(
                       onPressed: () {},
                       child: const Text(
-                        "Create now!",
+                        "Sign in",
                         style: TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.bold,
                           decoration: TextDecoration.underline,
                         ),
                       ),
-                    )
+                    ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),
