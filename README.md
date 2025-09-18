@@ -19,3 +19,5 @@ Password: 123456
 Success and fail animations are triggered when pressing the login button.
 
 Toggle to show/hide the password.
+
+![login_animation_8sc](assets/gif.gif)
