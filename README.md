@@ -1,16 +1,21 @@
-# login_animation_pro_8sc
+# Animated Login with Flutter and Rive
 
-A new Flutter project.
+This is a login screen project using Flutter and Rive. The animated character reacts to what you type in the email and password fields, making the login experience more interactive.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+The bear follows what you type in the email field.
 
-A few resources to get you started if this is your first Flutter project:
+When typing in the password field, the bear covers its eyes automatically.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+If you stop typing for a while, the bear looks forward again.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Simple login validation:
+
+User: cristian@gmail.com
+
+Password: 123456
+
+Success and fail animations are triggered when pressing the login button.
+
+Toggle to show/hide the password.
